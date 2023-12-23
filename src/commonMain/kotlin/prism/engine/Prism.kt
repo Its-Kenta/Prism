@@ -3,7 +3,6 @@ package prism.engine
 import platform.SDL2.*
 import kotlinx.cinterop.*
 import prism.engine.common.input.Keyboard
-import prism.engine.common.utils.debugLog
 import prism.engine.scene.Scene
 import kotlin.reflect.KClass
 import prism.engine.graphics.Renderer
@@ -58,24 +57,21 @@ abstract class Prism(config: PrismConfigurator) {
         require(SDL_Init(config.initialisationMode) == 0) {
             "ERROR: SDL2 failed to initialise! ${SDL_GetError()?.toKString()}"
         }
-        debugLog("SDL2 Initialised successfully.")
+        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "SDL2 Initialised successfully.")
 
         window = Window(config)
-        debugLog("Window created successfully.")
+        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Window created successfully.")
 
-        if (config.fullScreen) {
-            SDL_SetWindowFullscreen(window.getWindowPointer(), SDL_WINDOW_FULLSCREEN_DESKTOP)
-        }
-
+        if (config.fullScreen) SDL_SetWindowFullscreen(window.getWindowPointer(), SDL_WINDOW_FULLSCREEN_DESKTOP)
         SDL_SetHint(config.rendererHint, config.hintValue)
 
         renderer = Renderer(window, config)
-        debugLog("Renderer created successfully.")
+        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Renderer created successfully.")
 
         require(IMG_Init((IMG_INIT_PNG or IMG_INIT_JPG).toInt()) != 0) {
             "ERROR: SDL2 failed to initialise Image submodule! ${SDL_GetError()?.toKString()}"
         }
-        debugLog("SDL2 Image Subsystem initialised successfully.")
+        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "SDL2 Image Subsystem initialised successfully.")
     }
 
     // Scene management

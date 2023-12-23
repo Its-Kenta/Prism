@@ -12,9 +12,9 @@ import platform.SDL2.*
 typealias Texture = CPointer<SDL_Texture>
 
 fun loadTexture(filePath: String): Texture {
-        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Loading %s", filePath)
-        val texture: CPointer<SDL_Texture> = requireNotNull(IMG_LoadTexture(Prism.window.renderer, filePath)) { "ERROR: Failed to load texture! ${SDL_GetError()?.toKString()}" }
-        return texture
+    if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Loading %s", filePath)
+    val texture: CPointer<SDL_Texture> = requireNotNull(IMG_LoadTexture(Prism.window.renderer, filePath)) { "ERROR: Failed to load texture! ${SDL_GetError()?.toKString()}" }
+    return texture
 }
 
 fun Texture.getDimensions(): Vector2 = memScoped {
