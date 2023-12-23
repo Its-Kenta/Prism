@@ -3,6 +3,7 @@ package prism.engine
 import platform.SDL2.*
 import kotlinx.cinterop.*
 import prism.engine.common.input.Keyboard
+import prism.engine.common.utils.debugLog
 import prism.engine.scene.Scene
 import kotlin.reflect.KClass
 import prism.engine.graphics.Renderer
@@ -44,7 +45,6 @@ abstract class Prism(config: PrismConfigurator) {
         lateinit var window: Window
             private set
     }
-
     // Private properties
     private val renderer: Renderer
     private var isRunning = true
@@ -58,31 +58,29 @@ abstract class Prism(config: PrismConfigurator) {
         require(SDL_Init(config.initialisationMode) == 0) {
             "ERROR: SDL2 failed to initialise! ${SDL_GetError()?.toKString()}"
         }
-        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "SDL2 Initialised successfully.")
+        debugLog("SDL2 Initialised successfully.")
 
         window = Window(config)
-        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Window created successfully.")
+        debugLog("Window created successfully.")
 
         if (config.fullScreen) {
             SDL_SetWindowFullscreen(window.getWindowPointer(), SDL_WINDOW_FULLSCREEN_DESKTOP)
         }
 
-
         SDL_SetHint(config.rendererHint, config.hintValue)
 
         renderer = Renderer(window, config)
-        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Renderer created successfully.")
+        debugLog("Renderer created successfully.")
 
         require(IMG_Init((IMG_INIT_PNG or IMG_INIT_JPG).toInt()) != 0) {
             "ERROR: SDL2 failed to initialise Image submodule! ${SDL_GetError()?.toKString()}"
         }
-        if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "SDL2 Image Subsystem initialised successfully.")
+        debugLog("SDL2 Image Subsystem initialised successfully.")
     }
 
     // Scene management
-    @PublishedApi internal val scenes: HashMap<KClass<out Scene>, Scene> = HashMap()
-    @PublishedApi internal var currentScene: Scene = EmptyScene()
-    
+    @PublishedApi internal val scenes: HashMap<KClass<out Scene>, Lazy<Scene>> = HashMap()
+    @PublishedApi internal var currentScene: Lazy<Scene> = lazy { EmptyScene() }
 
     /**
      * Adds a scene of the specified type to the game.
@@ -90,11 +88,10 @@ abstract class Prism(config: PrismConfigurator) {
      * @param scene The scene to add.
      * @throws RuntimeException if a scene of the same type is already registered.
      */
-    inline fun <reified T : Scene> addScene(scene: T) {
-        scenes.takeIf { !it.containsKey(scene::class) }
-            ?: throw RuntimeException("Scene of type ${scene::class} is already registered. Use removeScene first to replace the scene.")
-        scenes[scene::class] = scene
-
+    inline fun <reified T : Scene> addScene(scene: Lazy<T>) {
+        scenes.takeIf { !it.containsKey(T::class) }
+            ?: throw RuntimeException("Scene of type ${T::class} is already registered. Use removeScene first to replace the scene.")
+        scenes[T::class] = scene
     }
 
     /**
@@ -123,7 +120,10 @@ abstract class Prism(config: PrismConfigurator) {
      * @throws NoSuchElementException if the scene of the specified type is not registered.
      */
     inline fun <Type : Scene> disposeScene(type: KClass<Type>) {
-        scenes[type]?.dispose()
+        val lazyScene = scenes[type]
+        if (lazyScene != null && lazyScene.isInitialized()) {
+            lazyScene.value.dispose()
+        }
         scenes.remove(type) ?: throw NoSuchElementException("Scene of type $type is not registered. Unable to remove and dispose.")
     }
 
@@ -160,10 +160,10 @@ abstract class Prism(config: PrismConfigurator) {
      */
     internal fun run() {
         while (isRunning) {
-            currentScene.render(renderer)
+            currentScene.value.render(renderer)
             Keyboard.update()
             pullEvents()
-            currentScene.update()
+            currentScene.value.update()
             renderer.present()
             SDL_Delay(FRAME_DELAY)
         }
@@ -177,9 +177,8 @@ abstract class Prism(config: PrismConfigurator) {
         IMG_Quit()
         renderer.dispose()
         window.dispose()
-        scenes.values.forEach { it.dispose() }
+        scenes.values.forEach { it.value.dispose() }
         scenes.clear()
         SDL_Quit()
     }
 }
-

@@ -12,26 +12,21 @@ class Renderer(window: Window, private val config: PrismConfigurator) : Disposab
     private var ptr: CPointer<SDL_Renderer> = requireNotNull(SDL_CreateRenderer(window.getWindowPointer(), -1, config.rendererFlags)) {
         "ERROR: SDL2 failed to create a renderer! ${SDL_GetError()?.toKString()}"
     }
-
     fun present() {
         SDL_RenderPresent(ptr)
     }
-
     fun clearBackground(color: Color) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
         SDL_RenderClear(ptr)
     }
-
     fun drawFilledRectangle(rectangle: SDL_Rect, color: Color) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
         SDL_RenderFillRect(ptr, rectangle.ptr)
     }
-
     fun drawRectangle(rectangle: SDL_Rect, color: Color = Color.WHITE) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
         SDL_RenderDrawRect(ptr, rectangle.ptr)
     }
-
     fun drawTexture(texture: Texture, position: Vector2, scale: Vector2 = Vector2(0F, 0F)) {
         memScoped {
             val dest = alloc<SDL_Rect>().apply {
@@ -50,21 +45,17 @@ class Renderer(window: Window, private val config: PrismConfigurator) : Disposab
             SDL_RenderCopy(ptr, texture, null, dest.ptr)
         }
     }
-
     fun setViewport(rectangle: SDL_Rect) {
         SDL_RenderSetViewport(ptr, rectangle.ptr)
     }
-
     fun drawLine(start: Vector2, end: Vector2, color: Color) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
         SDL_RenderDrawLine(ptr, start.x.toInt(), start.y.toInt(), end.x.toInt(), end.y.toInt())
     }
-
     fun drawPoint(position: Vector2, color: Color) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
         SDL_RenderDrawPoint(ptr, position.x.toInt(), position.y.toInt())
     }
-
     fun drawGrid(cellSize: Int, color: Color) {
         SDL_SetRenderDrawColor(ptr, color.r, color.g, color.b, color.a)
 
@@ -76,9 +67,6 @@ class Renderer(window: Window, private val config: PrismConfigurator) : Disposab
             SDL_RenderDrawLine(ptr, 0, j, config.screenWidth, j)
         }
     }
-
-
-
     override fun dispose() {
         SDL_DestroyRenderer(ptr)
     }

@@ -12,13 +12,9 @@ import platform.SDL2.*
 typealias Texture = CPointer<SDL_Texture>
 
 fun loadTexture(filePath: String): Texture {
-    return memScoped {
         if (Platform.isDebugBinary) SDL_LogMessage(SDL_LogCategory.SDL_LOG_CATEGORY_APPLICATION.ordinal, SDL_LOG_PRIORITY_INFO, "Loading %s", filePath)
-        val texture: CPointer<SDL_Texture> = requireNotNull(IMG_LoadTexture(Prism.window.renderer, filePath)) {
-            "ERROR: Failed to load texture! ${SDL_GetError()?.toKString()}"
-        }
-        texture
-    }
+        val texture: CPointer<SDL_Texture> = requireNotNull(IMG_LoadTexture(Prism.window.renderer, filePath)) { "ERROR: Failed to load texture! ${SDL_GetError()?.toKString()}" }
+        return texture
 }
 
 fun Texture.getDimensions(): Vector2 = memScoped {
@@ -30,15 +26,21 @@ fun Texture.getDimensions(): Vector2 = memScoped {
 }
 
 val Texture.width: Int
-    get() = memScoped {
-        val w = alloc<IntVar>()
-        SDL_QueryTexture(this@width, null, null, w.ptr, null)
-        w.value
+    get() {
+        return memScoped {
+            alloc<IntVar>().usePinned { intVar ->
+                SDL_QueryTexture(this@width, null, null, intVar.get().ptr, null)
+                intVar.get().value
+            }
+        }
     }
 
 val Texture.height: Int
-    get() = memScoped {
-        val h = alloc<IntVar>()
-        SDL_QueryTexture(this@height, null, null, null, h.ptr)
-        h.value
+    get() {
+        return memScoped {
+            alloc<IntVar>().usePinned { intVar ->
+                SDL_QueryTexture(this@height, null, null, null, intVar.get().ptr)
+                intVar.get().value
+            }
+        }
     }

@@ -40,13 +40,11 @@ class Window(private val config: PrismConfigurator) : Disposable {
     fun getWindowPointer(): CPointer<SDL_Window> = ptr
 
     fun setIcon(iconPath: String) {
-        val iconSurface = IMG_Load(iconPath)
-            ?: throw RuntimeException("Failed to load icon: ${SDL_GetError()?.toKString()}")
+        val iconSurface = requireNotNull(IMG_Load(iconPath)) { "ERROR: Failed to load icon: ${SDL_GetError()?.toKString()}" }
 
         SDL_SetWindowIcon(ptr, iconSurface)
         SDL_FreeSurface(iconSurface)
     }
-
     override fun dispose() {
         SDL_DestroyWindow(ptr)
     }
