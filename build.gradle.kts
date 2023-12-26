@@ -19,17 +19,13 @@ kotlin {
     if (os.isWindows) {
         mingwX64()
     }
-    if (os.isLinux) {
-        linuxX64()
-        linuxArm64()
-    }
-    if (os.isMacOsX) {
-        macosArm64()
-        macosX64()
-    }
+
+    macosArm64()
+    macosX64()
+    linuxX64()
 
     applyDefaultHierarchyTemplate()
-    
+
     targets.withType<KotlinNativeTarget> {
         compilations["main"].cinterops {
             create("sdl2")

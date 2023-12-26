@@ -1,12 +1,13 @@
 package = platform.SDL2
 headers = SDL2/SDL.h SDL2/SDL_image.h
 
-staticLibraries.osx = libSDL2_image.a
+staticLibraries.osx = libSDL2_image.a libSDL2.a
 libraryPaths.osx = src/nativeInterop/cinterop/lib/osx
+
 compilerOpts.osx = -D_THREAD_SAFE -I/opt/homebrew/include
+compilerOpts.linux = -D_REENTRANT -I/opt/homebrew/include -I/usr/local/include -I/usr/include
 
 linkerOpts.osx = \
--L/opt/homebrew/Cellar/sdl2/2.28.5/lib /opt/homebrew/Cellar/sdl2/2.28.5/lib/libSDL2.a \
 -lm \
 -liconv \
 -framework CoreAudio \
@@ -21,3 +22,5 @@ linkerOpts.osx = \
 -framework IOKit \
 -weak_framework QuartzCore \
 -weak_framework Metal
+
+linkerOpts.linux = --allow-shlib-undefined -L/usr/local/lib -L/usr/lib -L/usr/lib/x86_64-linux-gnu/ -L/usr/lib64 -lSDL2 -lSDL2_image -rpath=$ORIGIN/lib

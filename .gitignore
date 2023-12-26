@@ -1,3 +1,6 @@
 .gradle
 .idea
+.fleet
 build
+src/nativeInterop/cinterop/lib/osx/*
+.DS_Store
