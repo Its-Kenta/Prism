@@ -82,21 +82,22 @@ abstract class Prism(config: PrismConfigurator) {
      * Adds a scene of the specified type to the game.
      *
      * @param scene The scene to add.
-     * @throws RuntimeException if a scene of the same type is already registered.
+     * @throws IllegalArgumentException if a scene of the same type is already registered.
      */
     inline fun <reified T : Scene> addScene(scene: Lazy<T>) {
-        scenes.takeIf { !it.containsKey(T::class) }
-            ?: throw RuntimeException("Scene of type ${T::class} is already registered. Use removeScene first to replace the scene.")
+        requireNotNull(scenes.takeIf { !it.containsKey(T::class) }) {
+            "Scene of type ${T::class} is already registered. Use removeScene first to replace the scene."
+        }
         scenes[T::class] = scene
     }
 
     /**
      * Sets the current scene to the one of the specified type.
      *
-     * @throws RuntimeException if the specified scene type is not registered.
+     * @throws IllegalArgumentException if the specified scene type is not registered.
      */
     inline fun <reified T : Scene> setScene() {
-        currentScene = scenes[T::class] ?: throw RuntimeException("Scene of type ${T::class} is not registered. Use addScene first to register the scene.")
+        currentScene = requireNotNull(scenes[T::class]) { "Scene of type ${T::class} is not registered. Use addScene first to register the scene." }
     }
 
     /**
@@ -104,23 +105,22 @@ abstract class Prism(config: PrismConfigurator) {
      * This does not call dispose()
      *
      * @param type The type of scene to remove.
-     * @throws RuntimeException if the scene of the specified type is not registered.
+     * @throws IllegalArgumentException if the scene of the specified type is not registered.
      */
-    inline fun <Type : Scene> removeScene(type: KClass<Type>) = scenes.remove(type)
-        ?: throw RuntimeException("Scene of type $type is not registered. Unable to remove.")
+    inline fun <Type : Scene> removeScene(type: KClass<Type>) = requireNotNull(scenes.remove(type)) {
+        "Scene of type $type is not registered. Unable to remove."
+    }
 
     /**
      * Removes and calls dispose() function of a scene of the specified type.
      *
      * @param type The type of scene to dispose.
-     * @throws NoSuchElementException if the scene of the specified type is not registered.
+     * @throws IllegalArgumentException if the scene of the specified type is not registered.
      */
     inline fun <Type : Scene> disposeScene(type: KClass<Type>) {
-        val lazyScene = scenes[type]
-        if (lazyScene != null && lazyScene.isInitialized()) {
-            lazyScene.value.dispose()
-        }
-        scenes.remove(type) ?: throw NoSuchElementException("Scene of type $type is not registered. Unable to remove and dispose.")
+        val lazyScene = requireNotNull(scenes[type]) { "Scene of type $type is not registered. Unable to remove and dispose." }
+        if (lazyScene.isInitialized()) { lazyScene.value.dispose() }
+        scenes.remove(type)
     }
 
     /**

@@ -8,7 +8,7 @@ import prism.engine.PrismConfigurator
 import prism.engine.interfaces.Disposable
 import platform.SDL2.*
 
-class Window(private val config: PrismConfigurator) : Disposable {
+class Window(config: PrismConfigurator) : Disposable {
     private var ptr: CPointer<SDL_Window> = requireNotNull(
         SDL_CreateWindow(
             config.windowTitle, config.windowPosX.toInt(), config.windowPosY.toInt(),
