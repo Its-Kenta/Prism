@@ -1,5 +1,4 @@
-package prism.engine
-
+package prism.engine.common.utils
 
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.refTo
@@ -8,7 +7,7 @@ import platform.osx.proc_pidpath
 import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.getpid
-
+import prism.engine.PrismConfigurator
 
 /**
  * Returns the absolute path to the 'resources' folder located at the same location as your executable.

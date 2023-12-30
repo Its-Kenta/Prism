@@ -6,7 +6,18 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.toKString
 import platform.posix.*
 
+/**
+ * Returns the absolute path to the 'resources' folder located at the same location as your executable.
+ *
+ * This property provides the path to the 'resources' folder associated with your executable.
+ * Ensure that a folder named 'resources' is present in the same directory as your executable.
+ *
+ * @return The absolute path to the 'resources' folder, or null if it doesn't exist or cannot be determined.
+ */
+internal expect val resourcePath: String?
+
 object IO {
+
     /**
      * Reads the contents of a text file and returns it as a string.
      *

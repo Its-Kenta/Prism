@@ -1,9 +1,13 @@
-package prism.engine
+package prism.engine.common.utils
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.cinterop.toKString
-import platform.posix.*
+import platform.posix.F_OK
+import platform.posix.access
+import platform.posix.getpid
+import platform.posix.realpath
+import prism.engine.PrismConfigurator
 
 /**
  * Returns the absolute path to the 'resources' folder located at the same location as your executable.
